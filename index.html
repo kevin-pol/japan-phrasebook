@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>日本旅遊會話小幫手</title>
+<style>
+:root{--bg:#fbf7f2;--card:#fff;--tx:#222;--sub:#777;--ac:#c8372d;--ln:#e8e0d6;--ac2:#fde9e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17140f;--card:#25211b;--tx:#f2ede6;--sub:#a89f92;--ac:#ff6b5e;--ln:#38322a;--ac2:#3a211e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17140f;--card:#25211b;--tx:#f2ede6;--sub:#a89f92;--ac:#ff6b5e;--ln:#38322a;--ac2:#3a211e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"PingFang TC","Noto Sans TC","Hiragino Sans",sans-serif;max-width:560px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:20px;margin:6px 0 12px}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:6px 0;z-index:5}
+.tab{border:1px solid var(--ln);background:var(--card);color:var(--tx);border-radius:12px;padding:8px 2px;font-size:12px;line-height:1.3;text-align:center;cursor:pointer}
+.tab b{display:block;font-size:20px;font-weight:400}
+.tab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#q{width:100%;margin:8px 0;padding:11px 14px;border-radius:12px;border:1px solid var(--ln);background:var(--card);color:var(--tx);font-size:16px}
+.item{display:block;width:100%;text-align:left;background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:12px;padding:14px;margin:8px 0;font-size:16px;cursor:pointer}
+.item:active{background:var(--ac2)}
+#sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:20}
+#sheet.show{display:flex}
+.panel{background:var(--card);width:100%;max-width:560px;margin:0 auto;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px))}
+.zh{color:var(--sub);font-size:15px}
+.ja{font-size:30px;font-weight:700;line-height:1.4;margin:12px 0 6px}
+.kana{font-size:17px;color:var(--ac);margin-bottom:18px;line-height:1.6}
+.row{display:flex;gap:10px}
+.btn{flex:1;padding:13px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font-size:16px;cursor:pointer}
+.btn.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+.note{color:var(--sub);font-size:12px;text-align:center;margin-top:14px}
+</style>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#c8372d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="日本會話">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" href="./icon-192.png">
+</head>
+<body>
+<h1>🇯🇵 日本旅遊會話小幫手</h1>
+<div class="tabs" id="tabs"></div>
+<input id="q" type="search" placeholder="搜尋中文，例如：多少錢">
+<div id="list"></div>
+<div id="sheet"><div class="panel">
+<div class="zh" id="szh"></div>
+<div class="ja" id="sja"></div>
+<div class="kana" id="skn"></div>
+<div class="row"><button class="btn p" id="say">🔊 播放發音</button><button class="btn" id="close">關閉</button></div>
+<div class="note">可把手機螢幕直接給店員看</div>
+</div></div>
+<script>
+var D=[{n:"商店",e:"🛍️",p:[
+["你好，請問這個商品多少錢","この商品はいくらですか","このしょうひんはいくらですか"],
+["我只是看看","見ているだけです","みているだけです"],
+["可以試穿嗎","試着してもいいですか","しちゃくしてもいいですか"],
+["有其他尺寸嗎","他のサイズはありますか","ほかのサイズはありますか"],
+["有其他顏色嗎","他の色はありますか","ほかのいろはありますか"],
+["我要買這個","これをください","これをください"],
+["可以免稅嗎","免税できますか","めんぜいできますか"],
+["可以刷卡嗎","クレジットカードは使えますか","クレジットカードはつかえますか"],
+["可以算便宜一點嗎","少し安くなりますか","すこしやすくなりますか"],
+["可以幫我包裝成禮物嗎","プレゼント用に包んでいただけますか","プレゼントようにつつんでいただけますか"],
+["請給我袋子","袋をいただけますか","ふくろをいただけますか"],
+["請給我收據","レシートをいただけますか","レシートをいただけますか"],
+["可以看一下那個嗎","あれを見せてください","あれをみせてください"],
+["這個有折扣嗎","これは割引されていますか","これはわりびきされていますか"],
+["含稅嗎","税込みですか","ぜいこみですか"],
+["可以用電子支付嗎","電子マネーは使えますか","でんしマネーはつかえますか"],
+["請問試衣間在哪裡","試着室はどこですか","しちゃくしつはどこですか"],
+["太大了","大きすぎます","おおきすぎます"],
+["太小了","小さすぎます","ちいさすぎます"],
+["我再考慮一下","少し考えます","すこしかんがえます"]]},
+{n:"超商",e:"🏪",p:[
+["請幫我加熱","温めてください","あたためてください"],
+["不用袋子","袋は大丈夫です","ふくろはだいじょうぶです"],
+["請給我袋子","袋をください","ふくろをください"],
+["請給我筷子","お箸をください","おはしをください"],
+["請給我湯匙","スプーンをください","スプーンをください"],
+["我要熱咖啡","ホットコーヒーをください","ホットコーヒーをください"],
+["可以用交通卡（Suica）付款嗎","交通系ICカードは使えますか","こうつうけいアイシーカードはつかえますか"],
+["我付現金","現金で払います","げんきんではらいます"],
+["我沒有集點卡","ポイントカードはありません","ポイントカードはありません"],
+["請給我收據","レシートをください","レシートをください"],
+["請問有冷飲嗎","冷たい飲み物はありますか","つめたいのみものはありますか"],
+["請問有熱飲嗎","温かい飲み物はありますか","あたたかいのみものはありますか"],
+["請給我冰塊","氷をください","こおりをください"],
+["請給我熱水","お湯をください","おゆをください"],
+["請問提款機在哪裡","ATMはどこですか","エーティーエムはどこですか"],
+["可以用海外的卡嗎","海外のカードは使えますか","かいがいのカードはつかえますか"],
+["請問有雨傘嗎","傘はありますか","かさはありますか"],
+["請問有頭痛藥嗎","頭痛薬はありますか","ずつうやくはありますか"],
+["可以在這裡吃嗎","ここで食べてもいいですか","ここでたべてもいいですか"],
+["可以借用廁所嗎","トイレをお借りできますか","トイレをおかりできますか"]]},
+{n:"餐廳",e:"🍜",p:[
+["兩位，有位子嗎","二人ですが、空いていますか","ふたりですが、あいていますか"],
+["請給我菜單","メニューをください","メニューをください"],
+["有中文菜單嗎","中国語のメニューはありますか","ちゅうごくごのメニューはありますか"],
+["我要點餐","注文をお願いします","ちゅうもんをおねがいします"],
+["請問有什麼推薦的","おすすめは何ですか","おすすめはなんですか"],
+["請給我這個","これをください","これをください"],
+["請給我水","お水をください","おみずをください"],
+["不要辣","辛くしないでください","からくしないでください"],
+["我有過敏","アレルギーがあります","アレルギーがあります"],
+["請給我禁菸席","禁煙席をお願いします","きんえんせきをおねがいします"],
+["非常好吃","とても美味しかったです","とてもおいしかったです"],
+["請結帳","お会計をお願いします","おかいけいをおねがいします"],
+["可以分開付款嗎","別々に払えますか","べつべつにはらえますか"],
+["我有預約","予約しています","よやくしています"],
+["請問要等多久","どのくらい待ちますか","どのくらいまちますか"],
+["請給我啤酒","ビールをください","ビールをください"],
+["我想追加點餐","追加で注文してもいいですか","ついかでちゅうもんしてもいいですか"],
+["請問這是什麼","これは何ですか","これはなんですか"],
+["可以外帶嗎","持ち帰りできますか","もちかえりできますか"],
+["可以刷卡嗎","カードは使えますか","カードはつかえますか"]]},
+{n:"日常",e:"🚉",p:[
+["謝謝","ありがとうございます","ありがとうございます"],
+["不好意思／對不起","すみません","すみません"],
+["請問廁所在哪裡","トイレはどこですか","トイレはどこですか"],
+["請問車站在哪裡","駅はどこですか","えきはどこですか"],
+["請問要怎麼去這裡","ここへはどうやって行きますか","ここへはどうやっていきますか"],
+["請問可以說英語嗎","英語は話せますか","えいごははなせますか"],
+["我聽不懂","分かりません","わかりません"],
+["請再說一次","もう一度お願いします","もういちどおねがいします"],
+["請說慢一點","ゆっくり話してください","ゆっくりはなしてください"],
+["請問有 Wi-Fi 嗎","Wi-Fiはありますか","ワイファイはありますか"],
+["我迷路了","道に迷いました","みちにまよいました"],
+["我身體不舒服","具合が悪いです","ぐあいがわるいです"],
+["請幫幫我","助けてください","たすけてください"],
+["請叫救護車","救急車を呼んでください","きゅうきゅうしゃをよんでください"],
+["早安","おはようございます","おはようございます"],
+["你好","こんにちは","こんにちは"],
+["沒關係","大丈夫です","だいじょうぶです"],
+["請問藥局在哪裡","薬局はどこですか","やっきょくはどこですか"],
+["請問派出所在哪裡","交番はどこですか","こうばんはどこですか"],
+["我的護照不見了","パスポートを失くしました","パスポートをなくしました"]]},
+{n:"飯店",e:"🏨",p:[
+["我要辦理入住","チェックインをお願いします","チェックインをおねがいします"],
+["我有預約","予約しています","よやくしています"],
+["我要退房","チェックアウトをお願いします","チェックアウトをおねがいします"],
+["可以寄放行李嗎","荷物を預かっていただけますか","にもつをあずかっていただけますか"],
+["請問早餐幾點開始","朝食は何時からですか","ちょうしょくはなんじからですか"],
+["請問 Wi-Fi 密碼是什麼","Wi-Fiのパスワードを教えてください","ワイファイのパスワードをおしえてください"],
+["冷氣／暖氣壞了","エアコンが壊れています","エアコンがこわれています"],
+["請多給我一條毛巾","タオルをもう一枚ください","タオルをもういちまいください"],
+["請問可以延後退房嗎","チェックアウトを遅らせられますか","チェックアウトをおくらせられますか"],
+["請幫我叫計程車","タクシーを呼んでいただけますか","タクシーをよんでいただけますか"],
+["請問有牙刷嗎","歯ブラシはありますか","はブラシはありますか"],
+["請問房間在幾樓","部屋は何階ですか","へやはなんがいですか"],
+["請給我房卡","鍵をください","かぎをください"],
+["我忘了帶房卡","鍵を忘れました","かぎをわすれました"],
+["我進不去房間","部屋に入れません","へやにはいれません"],
+["沒有熱水","お湯が出ません","おゆがでません"],
+["請問大浴場開到幾點","大浴場は何時までですか","だいよくじょうはなんじまでですか"],
+["可以換房間嗎","部屋を替えてもらえますか","へやをかえてもらえますか"],
+["可以借吹風機嗎","ドライヤーをお借りできますか","ドライヤーをおかりできますか"],
+["請多給我一個枕頭","枕をもう一つください","まくらをもうひとつください"]]},
+{n:"交通",e:"🚃",p:[
+["請給我一張到這裡的票","ここまでの切符をください","ここまでのきっぷをください"],
+["請問這班電車有到這裡嗎","この電車はここへ行きますか","このでんしゃはここへいきますか"],
+["請問是幾號月台","何番線ですか","なんばんせんですか"],
+["請問下一班電車幾點","次の電車は何時ですか","つぎのでんしゃはなんじですか"],
+["請問要在哪裡轉乘","どこで乗り換えますか","どこでのりかえますか"],
+["請問這裡是哪一站","ここは何駅ですか","ここはなにえきですか"],
+["請問票價多少","運賃はいくらですか","うんちんはいくらですか"],
+["請問售票機在哪裡","券売機はどこですか","けんばいきはどこですか"],
+["可以儲值嗎","チャージできますか","チャージできますか"],
+["請問出口在哪裡","出口はどこですか","でぐちはどこですか"],
+["我坐過站了","乗り過ごしました","のりすごしました"],
+["請問新幹線在哪裡搭","新幹線のりばはどこですか","しんかんせんのりばはどこですか"],
+["我要指定席","指定席をお願いします","していせきをおねがいします"],
+["請載我到這個地址","この住所までお願いします","このじゅうしょまでおねがいします"],
+["請在這裡停車","ここで止めてください","ここでとめてください"],
+["請問公車站在哪裡","バス停はどこですか","バスていはどこですか"],
+["請問這班公車有到機場嗎","このバスは空港へ行きますか","このバスはくうこうへいきますか"],
+["我要下車","降ります","おります"],
+["請問機場巴士在哪裡搭","空港バスはどこで乗れますか","くうこうバスはどこでのれますか"],
+["請問末班車是幾點","終電は何時ですか","しゅうでんはなんじですか"]]}
+];
+var cur=0,ja="";
+var tabs=document.getElementById("tabs"),list=document.getElementById("list"),q=document.getElementById("q"),sheet=document.getElementById("sheet");
+D.forEach(function(c,i){var b=document.createElement("button");b.className="tab";b.innerHTML="<b>"+c.e+"</b>"+c.n;b.onclick=function(){cur=i;q.value="";render()};tabs.appendChild(b)});
+function render(){
+  Array.prototype.forEach.call(tabs.children,function(t,i){t.classList.toggle("on",i===cur)});
+  var k=q.value.trim(),src=[];
+  if(k){D.forEach(function(c){c.p.forEach(function(x){if(x[0].indexOf(k)>-1)src.push(x)})})}else{src=D[cur].p}
+  list.innerHTML="";
+  src.forEach(function(x){var b=document.createElement("button");b.className="item";b.textContent=x[0];b.onclick=function(){show(x)};list.appendChild(b)});
+  if(!src.length){list.innerHTML='<p class="zh">找不到相關會話</p>'}
+}
+function show(x){
+  ja=x[1];
+  document.getElementById("szh").textContent=x[0];
+  document.getElementById("sja").textContent=x[1];
+  document.getElementById("skn").textContent=x[2];
+  sheet.classList.add("show");
+}
+document.getElementById("close").onclick=function(){sheet.classList.remove("show")};
+sheet.onclick=function(e){if(e.target===sheet)sheet.classList.remove("show")};
+document.getElementById("say").onclick=function(){
+  try{var u=new SpeechSynthesisUtterance(ja);u.lang="ja-JP";u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}
+};
+q.oninput=render;
+render();
+try{if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js")}}catch(e){}
+</script>
+</body>
+</html>
